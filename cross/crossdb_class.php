@@ -65,9 +65,7 @@ class CrossDB extends Cross
 	$html = '';
 	$done = false;
 
-    if( $g == ""){
-		$game_questions = false;
-	}
+    $loadfromdb = ( $g == "");
 
     $this->m_mincol = $this->m_minrow = 0;
     $this->m_maxcol = $crossrec->cols;
@@ -98,7 +96,7 @@ class CrossDB extends Cross
 		$correctletters = $wrongletters = $restletters = 0;
 
 		foreach( $a as $rec){
-			$this->updatecrossquestions( $rec, $g, $pos, $correctletters, $wrongletters, $restletters, $game, $attempt, $crossrec);
+			$this->updatecrossquestions( $rec, $g, $pos, $correctletters, $wrongletters, $restletters, $game, $attempt, $crossrec, $loadfromdb);
 			$b[] = $rec;
 
 			if( ($rec->col != 0) and ($rec->row != 0)){
@@ -124,9 +122,9 @@ function game_cross_computecheck( $correctletters,  $wrongletters, $restletters,
 {
 	$ret = '';
 	
-	if( $correctletters == 0 and $wrongletters == 0){
-		return $ret;
-	}
+	//if( $correctletters == 0 and $wrongletters == 0){
+	//	return $ret;
+	//}
 	
 	$and = get_string( 'and', 'game');
 	
@@ -134,14 +132,15 @@ function game_cross_computecheck( $correctletters,  $wrongletters, $restletters,
 	if( $correctletters)
 		$a[] = $correctletters.' '.( $correctletters > 1 ? get_string( 'cross_corrects', 'game') :get_string( 'cross_correct', 'game'));
 	if( $wrongletters)
-		$a[] = $wrongletters.' '.( $wrongletters > 1 ? get_string( 'cross_errors', 'game') : get_string( 'cross_error', 'game'));
+		$a[] = '<b>'.$wrongletters.' '.( $wrongletters > 1 ? get_string( 'cross_errors', 'game') : get_string( 'cross_error', 'game')).'</b>';
 	
 	if(  $correctletters > 1 or $wrongletters > 1) {
 		$ret = get_string( 'cross_found_many', 'game');
-	}else
+	}else if( count( $a))
 	{
 		$ret = get_string( 'cross_found_one', 'game');
-	}
+	}else
+	    $ret = '';
 
 	$i = 0;
 	foreach( $a as $msg)
@@ -178,13 +177,18 @@ function game_cross_computecheck( $correctletters,  $wrongletters, $restletters,
 }
 
 	//rec is a record of cross_questions
-	function updatecrossquestions( &$rec, &$g, &$pos, &$correctletters, &$wrongletters, &$restletters, $game, $attempt, $crossrec)
+	function updatecrossquestions( &$rec, &$g, &$pos, &$correctletters, &$wrongletters, &$restletters, $game, $attempt, $crossrec, $loadfromdb)
 	{
 		global $DB, $USER;
 
 		$word = $rec->answertext;
 		$len = textlib::strlen( $word);
-		$guess = textlib::substr( $g, $pos, $len);
+		
+		if( $loadfromdb)
+		    $guess = $rec->studentanswer;
+		else
+		    $guess = textlib::substr( $g, $pos, $len);
+		    
 		$len_guess = textlib::strlen( $guess);;
 		$pos += $len;
 
@@ -202,7 +206,7 @@ function game_cross_computecheck( $correctletters,  $wrongletters, $restletters,
 			$letterword= textlib::substr( $word, $i, 1);
 			if( $letterword != $letterguess)
 			{
-                if( ($letterguess != ' ' and $letterguess != '_') or ($letterword == ' ')){
+                if( ($letterguess != ' ' and $letterguess != '_')){
                     $wrongletters++;
                 }
                 game_setchar( $guess, $i, '_');
@@ -212,8 +216,8 @@ function game_cross_computecheck( $correctletters,  $wrongletters, $restletters,
 				    $correctletters++;
                 }else
                 {
-                    $wrongletters++;
-                    game_setchar( $guess, $i, '_');
+                    //$wrongletters++;
+                    //game_setchar( $guess, $i, '_');
 				}
 			}else
 			{

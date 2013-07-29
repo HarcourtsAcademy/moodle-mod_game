@@ -158,6 +158,10 @@ class mod_game_mod_form extends moodleform_mod {
             }
             $mform->addElement('select', 'bookid', get_string('sourcemodule_book', 'game'), $a);
         }
+        
+//Common settings to all games                
+        $mform->addElement('text', 'maxattempts', get_string('cross_max_attempts','game'));
+        $mform->setType('maxattempts', PARAM_INT);              
 
 //---------------------------------------------------------------------------
 // Grade options 
@@ -166,10 +170,10 @@ class mod_game_mod_form extends moodleform_mod {
         $mform->addElement('text', 'grade', get_string( 'grademax', 'grades'), array('size' => 4));
         $mform->setType('grade', PARAM_INT);
         $gradingtypeoptions = array();
-        $gradingtypeoptions[0] = get_string('gradehighest','game');
-        $gradingtypeoptions[1] = get_string('gradeaverage','game');
-        $gradingtypeoptions[2] = get_string('attemptfirst','game');
-        $gradingtypeoptions[3] = get_string('attemptlast','game');
+        $gradingtypeoptions[ GAME_GRADEHIGHEST] = get_string('gradehighest','game');
+        $gradingtypeoptions[ GAME_GRADEAVERAGE] = get_string('gradeaverage','game');
+        $gradingtypeoptions[ GAME_ATTEMPTFIRST] = get_string('attemptfirst','game');
+        $gradingtypeoptions[ GAME_ATTEMPTLAST] = get_string('attemptlast','game');
         $mform->addElement('select', 'grademethod', get_string('grademethod','game'), $gradingtypeoptions);
         
         // Open and close dates.
@@ -178,8 +182,8 @@ class mod_game_mod_form extends moodleform_mod {
         $mform->addHelpButton('timeopen', 'quizopenclose', 'quiz');
 
         $mform->addElement('date_time_selector', 'timeclose', get_string('gameclose', 'game'),
-                array('optional' => true, 'step' => 1));        
-        
+                array('optional' => true, 'step' => 1));              
+                        
 //---------------------------------------------------------------------------
 // Bookquiz options
 

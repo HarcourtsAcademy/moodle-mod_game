@@ -118,8 +118,11 @@ function game_cross_play( $id, $game, $attempt, $crossrec, $g, $onlyshow, $shows
 		if( $endofgame == false){
 			echo '<B>'.get_string( 'win', 'game').'</B><BR>';
 		}
-		echo '<br>';	
-		echo "<a href=\"{$CFG->wwwroot}/mod/game/attempt.php?id=$id&forcenew=1\">".get_string( 'nextgame', 'game').'</a> &nbsp; &nbsp; &nbsp; &nbsp; ';
+		if( game_can_start_new_attempt( $game))
+		{
+		    echo '<br>';	
+		    echo "<a href=\"{$CFG->wwwroot}/mod/game/attempt.php?id=$id&forcenew=1\">".get_string( 'nextgame', 'game').'</a> &nbsp; &nbsp; &nbsp; &nbsp; ';
+		}
 	}else if( $info != ''){
 		echo "<br>$info<br>";
 	}
@@ -147,7 +150,7 @@ padding:	.75em;
 width:	240pt;
 }
 
-.box  {
+.gamebox  {
 border-style:	solid;
 border-width:	1pt;
 cursor:	pointer;
@@ -413,7 +416,7 @@ if (document.getElementById("waitmessage") != null)
 		{
 			if (TableAcrossWord[x][y] >= 0 || TableDownWord[x][y] >= 0)
 			{
-				document.write("<td id=\"c" + PadNumber(x) + PadNumber(y) + "\" class=\"box boxnormal_unsel\" onclick=\"SelectThisWord(event);\">");
+				document.write("<td id=\"c" + PadNumber(x) + PadNumber(y) + "\" class=\"gamebox boxnormal_unsel\" onclick=\"SelectThisWord(event);\">");
 
 				if( solu[x][y] != '')
 					document.write( solu[x][y]);
