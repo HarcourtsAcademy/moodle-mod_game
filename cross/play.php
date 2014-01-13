@@ -55,7 +55,7 @@ function game_cross_new( $game, $attemptid, &$crossm)
 		$infos[ $rec->answertext] = array( $game->sourcemodule, $rec->questionid, $rec->glossaryentryid, $rec->attachment);
 
         $a = array( 'gameid' => $game->id, 'userid' => $USER->id, 'questionid' => $rec->questionid, 'glossaryentryid' => $rec->glossaryentryid);
-        if(($rec2 = $DB->get_record('game_repetitions', $a, 'id,repetitions r')) != false){
+        if(($rec2 = $DB->get_record('game_repetitions', $a, 'id,repetitions AS r')) != false){
             $reps[ $rec->answertext] = $rec2->r;
         }
 	}
@@ -970,9 +970,11 @@ if( $showhtmlsolutions)
 		
 		echo ' &nbsp;&nbsp;&nbsp;&nbsp;<button id="finishattemptbutton" type="button" onclick="CheckServerClick( 1);" style="display: none;">'.get_string( 'cross_endofgamebutton', 'game');
 		echo '</button>';
-
-		echo ' &nbsp;&nbsp;&nbsp;&nbsp;<button id="printbutton" type="button" onclick="OnPrint( 0);" style="display: none;">'.get_string( 'print', 'game');
-		echo '</button>';
+        if( $game->param5 == 1 or $game->param5 == NULL)
+        {
+		    echo ' &nbsp;&nbsp;&nbsp;&nbsp;<button id="printbutton" type="button" onclick="OnPrint( 0);" style="display: none;">'.get_string( 'print', 'game');
+		    echo '</button>';
+        }
 		
 		echo "</div>\r\n";
 	}	
@@ -1040,7 +1042,7 @@ if( $attempt != false){
 
 </body>
 
-<?PHP
+<?php
 }
 
 function game_cross_show_welcome( $game){

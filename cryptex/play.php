@@ -52,7 +52,7 @@ function game_cryptex_continue( $id, $game, $attempt, $cryptexrec, $endofgame, $
 		$infos[ $rec->answertext] = array( $game->sourcemodule, $rec->questionid, $rec->glossaryentryid);
 
         $a = array( 'gameid' => $game->id, 'userid' => $USER->id, 'questionid' => $rec->questionid, 'glossaryentryid' => $rec->glossaryentryid);
-        if(($rec2 = $DB->get_record('game_repetitions', $a, 'id,repetitions r')) != false){
+        if(($rec2 = $DB->get_record('game_repetitions', $a, 'id,repetitions AS r')) != false){
             $reps[ $rec->answertext] = $rec2->r;
         }
 	}
@@ -266,15 +266,15 @@ width:	240pt;
 			}	
 		}
 		
-        $question = "$i. ".$q->questiontext;
-        $question = game_filterquestion(str_replace( array( "\'", '\"'), array( "'", '"'), $question), $q->questionid, $context->id, $game->course);
+        $question = game_show_query( $game, $q, "$i. ".$q->questiontext, $context);
         $question2 = strip_tags($question); //ADDED BY DP (AUG 2009) - fixes " breaking the Answer button for this question
+
 		if( ($onlyshow == false) and ($showsolution == false)){
 			if( ($game->param8 == 0) || ($game->param8 > $q->tries))
 				$question .= ' &nbsp;<input type="submit" value="'.get_string( 'answer').'" onclick="OnCheck( '.$q->id.',\''.$question2.'\');" />';
 		}
+        echo $question;
 
-		echo $question;
 		if( $showsolution){
 			echo " &nbsp;&nbsp;&nbsp;$q->answertext<B></b>";
 		}

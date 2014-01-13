@@ -73,7 +73,7 @@ function game_hangman_continue( $id, $game, $attempt, $hangman, $newletter, $act
 	   
 	    $copy = false;
         $select2 = 'gameid=? AND userid=? AND questionid=? AND glossaryentryid=?';
-        if( ($rec2 = $DB->get_record_select( 'game_repetitions', $select2, array( $game->id, $USER->id, $rec->questionid, $rec->glossaryentryid), 'id,repetitions r')) != false){
+        if( ($rec2 = $DB->get_record_select( 'game_repetitions', $select2, array( $game->id, $USER->id, $rec->questionid, $rec->glossaryentryid), 'id,repetitions AS r')) != false){
             if( ($rec2->r < $min_num) or ($min_num == 0)){
                 $min_num = $rec2->r;
                 $copy = true;
@@ -302,7 +302,7 @@ function hangman_showpage(&$done, &$correct, &$wrong, $max, &$word_line, &$word_
     }else
     {
         $cmglossary = get_coursemodule_from_instance('glossary', $game->glossaryid, $game->course);
-        $contextglossary = get_context_instance(CONTEXT_MODULE, $cmglossary->id);        
+        $contextglossary = game_get_context_module_instance( $cmglossary->id);    
         $query->questiontext = game_filterglossary(str_replace( '\"', '"', $query->questiontext), $query->glossaryentryid, $contextglossary->id, $game->course);
     }
 		

@@ -460,7 +460,10 @@ function game_sudoku_showquestions_glossary( $id, $game, $attempt, $sudoku, $off
             continue;   //I don't show the correct answers
         }
 
-		$s = '<b>A'.$ofs.'.</b> '.game_filtertext( $entry->definition, 0).'<br>';
+        $query = new StdClass;
+        $query->glossaryid = $game->glossaryid;
+        $query->glossaryentryid = $entry->id;
+        $s = '<b>A'.$ofs.'.</b> '.game_show_query( $game, $query, $entry->definition, 0).'<br>';
 		if( $showsolution){
 			$s .= get_string( 'answer').': ';
 			$s .= "<input type=\"text\" name=\"resp{$entry->id}\" value=\"$entry->concept\"size=30 /><br>";
@@ -570,8 +573,9 @@ function game_sudoku_check_glossaryentries( $id, $game, $attempt, $sudoku, $fini
 		}
         //correct answer
         $select = "attemptid=$attempt->id";
-        $select .= " AND glossaryentryid=$entry->id";
-            
+        $select .= " AND glossaryentryid=$entry->id AND col>0";
+        $select .= " AND questiontext is null"; // check the student guesses not source glossary entry.
+           
 		$query = new stdClass();
         if( ($query->id = $DB->get_field_select( 'game_queries', 'id', $select)) == 0){
 			echo "not found $select<br>";

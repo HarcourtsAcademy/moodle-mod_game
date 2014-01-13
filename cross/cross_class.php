@@ -135,7 +135,7 @@ class Cross
         }
         $this->computepuzzleinfo( $this->m_best_N20, $this->m_best_cross_pos, $this->m_best_cross_dir, $this->m_best_cross_word, false);
     
-        set_time_limit( 30);
+        //set_time_limit( 30);
     
         return $this->savepuzzle( $crossm, $crossd, $ctries, time()-$t1);
     }
@@ -630,7 +630,7 @@ class Cross
         if( $game->glossaryid)
         {
             $cmglossary = get_coursemodule_from_instance('glossary', $game->glossaryid, $game->course);
-            $contextglossary = get_context_instance(CONTEXT_MODULE, $cmglossary->id);
+            $contextglossary = game_get_context_module_instance( $cmglossary->id);
         }
 		foreach ($crossd as $rec)
 		{

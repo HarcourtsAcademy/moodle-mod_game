@@ -53,7 +53,7 @@ function game_showusers($game)
 
     $users = array();
 
-    $context = get_context_instance(CONTEXT_COURSE, $game->course);
+    $context = game_get_context_course_instance( $game->course);
 
     if ($courseusers = get_enrolled_users($context)) {
         foreach ($courseusers as $courseuser) {
@@ -109,7 +109,7 @@ function game_showusers($game)
 function game_showanswers( $game, $existsbook, $context)
 {
     if( $game->gamekind == 'bookquiz' and $existsbook){
-        game_showanswers_bookquiz( $game);
+        game_showanswers_bookquiz( $game, $context);
         return;
     }
     
@@ -377,8 +377,13 @@ function game_showanswers_glossary( $game)
         echo '<tr>';
         echo '<td>'.(++$line);
         echo '</td>';
-        
-        echo '<td>'.$question->definition.'</td>';
+
+        $query = new StdClass;
+        $query->glossaryid = $game->glossaryid;
+        $query->glossaryentryid = $question->id;
+        echo '<td>'.game_show_query( $game, $query, $question->definition).'</td>';
+
+
         echo '<td>'.$question->concept.'</td>';
         if( $reps != false){
             if( array_key_exists( $question->id, $reps))
@@ -393,7 +398,7 @@ function game_showanswers_glossary( $game)
     echo "</table><br>\r\n\r\n";
 }
 
-function game_showanswers_bookquiz( $game)
+function game_showanswers_bookquiz( $game, $context)
 {
     global $CFG;
     
@@ -402,5 +407,6 @@ function game_showanswers_bookquiz( $game)
 			  " AND bc.id = gbq.chapterid";
 	$table = "{question} q,{game_bookquiz_questions} gbq,{book_chapters} bc";
 	
-    game_showanswers_question_select( $game, $table, $select, "DISTINCT q.*", "bc.pagenum,questiontext");
+    $showcategories = ($game->gamekind == 'bookquiz');
+    game_showanswers_question_select( $game, $table, $select, "DISTINCT q.*", "bc.pagenum,questiontext", $showcategories, $game->course, $context);
 }

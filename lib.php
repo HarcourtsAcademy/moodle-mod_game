@@ -913,7 +913,7 @@ function game_extend_settings_navigation($settings, $gamenode) {
         case 'snakes':        
         case 'cross':
         case 'millionaire':
-            $url = new moodle_url('/mod/game/export.php', array( 'id' => $game->id,'courseid'=>$courseid, 'target' => 'html'));
+            $url = new moodle_url('/mod/game/export.php', array( 'q' => $game->id,'courseid'=>$courseid, 'target' => 'html'));
             $gamenode->add(get_string('export_to_html', 'game'), $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/item', ''));
             break;
         }
@@ -928,6 +928,8 @@ function game_extend_settings_navigation($settings, $gamenode) {
 function game_get_types(){
     global $DB;
 
+    $config = get_config('game');
+
     $types = array();
 
     $type = new object();
@@ -936,54 +938,110 @@ function game_get_types(){
     $type->typestr = '--'.get_string( 'modulenameplural', 'game');
     $types[] = $type;
 
-    $type = new object();
-    $type->modclass = MOD_CLASS_ACTIVITY;
-    $type->type = "game&amp;type=hangman";
-    $type->typestr = get_string('game_hangman', 'game');
-    $types[] = $type;
-
-    $type = new object();
-    $type->modclass = MOD_CLASS_ACTIVITY;
-    $type->type = "game&amp;type=cross";
-    $type->typestr = get_string('game_cross', 'game');
-    $types[] = $type;
-    
-    $type = new object();
-    $type->modclass = MOD_CLASS_ACTIVITY;
-    $type->type = "game&amp;type=cryptex";
-    $type->typestr = get_string('game_cryptex', 'game');
-    $types[] = $type;
-    
-    $type = new object();
-    $type->modclass = MOD_CLASS_ACTIVITY;
-    $type->type = "game&amp;type=millionaire";
-    $type->typestr = get_string('game_millionaire', 'game');
-    $types[] = $type;
-    
-    $type = new object();
-    $type->modclass = MOD_CLASS_ACTIVITY;
-    $type->type = "game&amp;type=sudoku";
-    $type->typestr = get_string('game_sudoku', 'game');
-    $types[] = $type;
-   
-    $type = new object();
-    $type->modclass = MOD_CLASS_ACTIVITY;
-    $type->type = "game&amp;type=snakes";
-    $type->typestr = get_string('game_snakes', 'game');
-    $types[] = $type;
-
-    $type = new object();
-    $type->modclass = MOD_CLASS_ACTIVITY;
-    $type->type = "game&amp;type=hiddenpicture";
-    $type->typestr = get_string('game_hiddenpicture', 'game');
-    $types[] = $type;
-
-    if($DB->get_record( 'modules', array( 'name' => 'book'), 'id,id')){
+    if( isset( $config->hidehangman))
+        $hide = ($config->hidehangman != 0);
+    else
+        $hide = false;
+    if( $hide == false)
+    { 
         $type = new object();
         $type->modclass = MOD_CLASS_ACTIVITY;
-        $type->type = "game&amp;type=bookquiz";
-        $type->typestr = get_string('game_bookquiz', 'game');
+        $type->type = "game&amp;type=hangman";
+        $type->typestr = get_string('game_hangman', 'game');
         $types[] = $type;
+    }
+
+    if( isset( $config->hidecross))
+        $hide = ($config->hidecross != 0);
+    else
+        $hide = false;
+    if( $hide == false)
+    { 
+        $type = new object();
+        $type->modclass = MOD_CLASS_ACTIVITY;
+        $type->type = "game&amp;type=cross";
+        $type->typestr = get_string('game_cross', 'game');
+        $types[] = $type;
+    }
+    
+    if( isset( $config->hidecryptex))
+        $hide = ($config->hidecryptex != 0);
+    else
+        $hide = false;
+    if( $hide == false)
+    { 
+        $type = new object();
+        $type->modclass = MOD_CLASS_ACTIVITY;
+        $type->type = "game&amp;type=cryptex";
+        $type->typestr = get_string('game_cryptex', 'game');
+        $types[] = $type;
+    }
+    
+    if( isset( $config->hidemillionaire))
+        $hide = ($config->hidemillionaire != 0);
+    else
+        $hide = false;
+    if( $hide == false)
+    { 
+        $type = new object();
+        $type->modclass = MOD_CLASS_ACTIVITY;
+        $type->type = "game&amp;type=millionaire";
+        $type->typestr = get_string('game_millionaire', 'game');
+        $types[] = $type;
+    }
+    
+    if( isset( $config->hidesudoku))
+        $hide = ($config->hidesudoku != 0);
+    else
+        $hide = false;
+    if( $hide == false)
+    { 
+        $type = new object();
+        $type->modclass = MOD_CLASS_ACTIVITY;
+        $type->type = "game&amp;type=sudoku";
+        $type->typestr = get_string('game_sudoku', 'game');
+        $types[] = $type;
+    }
+
+    if( isset( $config->hidesnakes))
+        $hide = ($config->hidesnakes != 0);
+    else
+        $hide = false;
+    if( $hide == false)
+    { 
+        $type = new object();
+        $type->modclass = MOD_CLASS_ACTIVITY;
+        $type->type = "game&amp;type=snakes";
+        $type->typestr = get_string('game_snakes', 'game');
+        $types[] = $type;
+    }
+
+    if( isset( $config->hidehiddenpicture))
+        $hide = ($config->hidehiddenpicture != 0);
+    else
+        $hide = false;
+    if( $hide == false)
+    { 
+        $type = new object();
+        $type->modclass = MOD_CLASS_ACTIVITY;
+        $type->type = "game&amp;type=hiddenpicture";
+        $type->typestr = get_string('game_hiddenpicture', 'game');
+        $types[] = $type;
+    }
+
+    if( isset( $config->hidebookquiz))
+        $hide = ($config->hidebookquiz != 0);
+    else
+        $hide = false;
+    if( $hide == false)
+    { 
+        if($DB->get_record( 'modules', array( 'name' => 'book'), 'id,id')){
+            $type = new object();
+            $type->modclass = MOD_CLASS_ACTIVITY;
+            $type->type = "game&amp;type=bookquiz";
+            $type->typestr = get_string('game_bookquiz', 'game');
+            $types[] = $type;
+        }
     }
 
     $type = new object();
@@ -993,7 +1051,6 @@ function game_get_types(){
     $types[] = $type;
 
     return $types;
-
 }
 
 function mod_game_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload)
@@ -1010,8 +1067,9 @@ function mod_game_pluginfile($course, $cm, $context, $filearea, $args, $forcedow
     {
         $questionid = $args[ 0];
         $file = $args[ 1];
-        
-        if (!$contextcourse = get_context_instance(CONTEXT_COURSE, $course->id)) {
+        $a = explode( '/', $context->path);
+        $courseid = $a[ 2];
+        if (!$contextcourse = get_context_instance(CONTEXT_COURSE, $courseid)) {
             print_error('nocontext');
         }
         $a = array( 'component' => 'question', 'filearea' => 'questiontext', 
@@ -1208,5 +1266,24 @@ function game_get_completion_state($course, $cm, $userid, $type) {
     $grade = $DB->get_record_select('game_grades', "userid=$userid AND gameid = $cm->instance", null, 'id,score');
 
     return $grade && $grade->score > 0;
+}
+
+/**
+ * Checks if scale is being used by any instance of Game
+ *
+ * This is used to find out if scale used anywhere
+ *
+ * @global object
+ * @param int $scaleid
+ * @return boolean True if the scale is used by any Game
+ */
+function game_scale_used_anywhere($scaleid) {
+    global $DB;
+
+    if ($scaleid and $DB->record_exists('game', array('grade'=>-$scaleid))) {
+        return true;
+    } else {
+        return false;
+    }
 }
 

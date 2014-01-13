@@ -270,7 +270,7 @@ function game_question_selectrandom( $game, $table, $select, $id_fields='id', $u
             $questionid = $id;
         
         $a = array( 'gameid' => $game->id, 'userid' => $USER->id, 'questionid' => $questionid, 'glossaryentryid' => $glossaryentryid);
-        if( ($rec = $DB->get_record( 'game_repetitions', $a, 'id,repetitions r')) != false){
+        if( ($rec = $DB->get_record( 'game_repetitions', $a, 'id,repetitions AS r')) != false){
             if( ($rec->r < $min_num) or ($min_num == 0)){
                 $min_num = $rec->r;
                 $min_id = $id;
@@ -295,7 +295,7 @@ function game_update_repetitions( $gameid, $userid, $questionid, $glossaryentryi
     global $DB;
 
     $a = array( 'gameid' => $gameid, 'userid' => $userid, 'questionid' => $questionid, 'glossaryentryid' => $glossaryentryid);
-    if( ($rec = $DB->get_record( 'game_repetitions', $a, 'id,repetitions r')) != false){
+    if( ($rec = $DB->get_record( 'game_repetitions', $a, 'id,repetitions AS r')) != false){
         $updrec = new stdClass();
         $updrec->id = $rec->id;
         $updrec->repetitions = $rec->r + 1;
@@ -1228,6 +1228,35 @@ function game_filterglossary( $text, $entryid, $contextid, $courseid)
     
 }
 
+function game_filterbook( $text, $chapterid, $contextid, $courseid)
+{
+    global $CFG, $DB;
+
+    for(;;)
+    {
+        $find='@@PLUGINFILE@@';
+        $pos = strpos( $text, $find);
+        if( $pos === false)
+            break;
+        
+        $pos2 = strpos( $text,'/', $pos);
+        if( $pos2 === false)
+            break;
+            
+        $pos3 = strpos( $text,'"', $pos);
+        if( $pos3 === false)
+            break;
+            
+        $file = substr( $text, $pos2+1, $pos3-$pos2-1);
+       
+        $new = $CFG->wwwroot."/pluginfile.php/$contextid/mod_book/chapter/$chapterid/$file";
+        $text = substr( $text, 0, $pos).$new.substr( $text,$pos3);
+    }
+    $questiontext = str_replace( '$$'.'\\'.'\\'.'frac', '$$\\'.'frac', $text);
+    return game_filtertext( $text, $courseid);
+    
+}
+
 function game_filterquestion( $questiontext, $questionid, $contextid, $courseid)
 {
     global $CFG, $DB;
@@ -1289,7 +1318,7 @@ function game_filtertext( $text, $courseid){
     $formatoptions = new stdClass();
     $formatoptions->noclean = true;
     $formatoptions->filter = 1;    
-    $text = trim( format_text( $text, FORMAT_MOODLE, $formatoptions, $courseid));
+    $text = trim( format_text( $text, FORMAT_MOODLE, $formatoptions));
 
     $start = '<div class="text_to_html">';
     if( substr( $text, 0, strlen( $start)) == $start){
@@ -1451,7 +1480,7 @@ function game_select_from_repetitions( $game, $recs, $need){
     foreach( $recs as $rec){
         $a = array( 'gameid' => $game->id, 'userid' => $USER->id, 'questionid' => $rec->questionid, 'glossaryentryid' => $rec->glossaryentryid);
         $id = $rec->$field;
-        if( ($rec = $DB->get_record( 'game_repetitions', $a, 'id,repetitions r')) != false){
+        if( ($rec = $DB->get_record( 'game_repetitions', $a, 'id,repetitions AS r')) != false){
             $reps[ $id] = $rec->r;
         }else
         {
@@ -1919,12 +1948,17 @@ function game_debug_array( $title, $a)
 
 function game_get_version()
 {
-    global $DB;
+    global $CFG, $DB;
     
-    if( ($rec = $DB->get_record( 'modules', array( 'name' => 'game'), 'id,version')) === false)
+    if( ($rec = $DB->get_record( 'modules', array( 'name' => 'game'))) === false)
         return '';
-        
-    return $rec->version;
+
+    if( isset( $rec->version))
+        return $rec->version;
+
+    $module = new StdClass;
+    require($CFG->dirroot . '/mod/game/version.php');
+    return $module->version;
 }
 
 function game_can_start_new_attempt( $game)
@@ -1989,4 +2023,38 @@ function game_strpos( $haystack, $needle, $offset = 0)
         return textlib::strpos( $haystack, $needle, $offset);
     else
         return textlib_get_instance()->strpos( $haystack, $needle, $offset);
+}
+
+
+function game_get_context_course_instance( $courseid)
+{
+    if( class_exists( 'context_course'))
+        return context_course::instance( $courseid);
+    
+    return get_context_instance( 50, $courseid);
+}
+
+function game_get_context_module_instance( $moduleid)
+{
+    if( class_exists( 'context_module'))
+        return context_module::instance( $moduleid);
+    
+    return get_context_instance( CONTEXT_MODULE, $moduleid);
+}
+
+function game_show_query( $game, $query, $text)
+{
+    if( $game->glossaryid)
+    {
+        $cmglossary = get_coursemodule_from_instance('glossary', $game->glossaryid, $game->course);
+        $contextglossary = game_get_context_module_instance( $cmglossary->id);  
+        return game_filterglossary(str_replace( '\"', '"', $text), $query->glossaryentryid, $contextglossary->id, $game->course);
+    }else if( $query->questionid)
+    {
+        $context = game_get_context_module_instance( $game->id);
+	    $text = str_replace( array("\'", '\"'), array("'", '"'), $text);
+        return game_filterquestion($text, $query->questionid, $context->id, $game->course);
+    }
+
+    return $text;
 }

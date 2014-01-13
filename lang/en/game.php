@@ -214,6 +214,7 @@ $string[ 'cross_max_attempts'] = 'Maximum number of attempts';
 $string[ 'cross_maxwords'] = 'Maximum number of words';
 $string[ 'cross_minwords'] = 'Minimum number of words';
 $string[ 'cross_options'] = 'Crossword options';
+$string[ 'cross_showprint'] = 'Show print button';
 $string[ 'cryptex_maxtries'] = 'Max tries';
 $string[ 'cryptex_options'] = 'Cryptex options';
 $string[ 'gameclose'] = 'Close the game';
@@ -279,6 +280,25 @@ $string[ 'reviewofattempt'] = 'Review of Attempt {$a}';
 $string[ 'showall'] = 'Show all';
 $string[ 'startagain'] = 'Start again';
 $string[ 'timetaken'] = 'Time taken';
+
+//settings.php
+$string[ 'hidebookquiz'] = 'Hide the "Book with questions" game';
+$string[ 'hidecross'] = 'Hide the Crossword game';
+$string[ 'hidecryptex'] = 'Hide the Cryptex game';
+$string[ 'hidehangman'] = 'Hide the Hangman game';
+$string[ 'hidehiddenpicture'] = 'Hide the "Hidden Picture" game';
+$string[ 'hidemillionaire'] = 'Hide the Millionaire game';
+$string[ 'hidesnakes'] = 'Hide the "Snakes and Ladders" game';
+$string[ 'hidesudoku'] = 'Hide the Sudoku game';
+$string[ 'confighidebookquiz'] = 'Configs if the "Book with questions" game is shown to teachers or not';
+$string[ 'confighidecross'] = 'Configs if the Crossword game is shown to teachers or not';
+$string[ 'confighidecryptex'] = 'Configs if the Cryptex game is shown to teachers or not';
+$string[ 'confighidehangman'] = 'Configs if the Hangman game is shown to teachers or not';
+$string[ 'confighidehiddenpicture'] = 'Configs if the "Hidden Picture" game is shown to teachers or not';
+$string[ 'confighidemillionaire'] = 'Configs if the Millionaire game is shown to teachers or not';
+$string[ 'confighidesnakes'] = 'Configs if the "Snakes and Ladders" game is shown to teachers or not';
+$string[ 'confighidesudoku'] = 'Configs if the Sudoku game is shown to teachers or not';
+
 
 //showanswers.php
 $string[ 'clearrepetitions'] = 'Clear statistics';
