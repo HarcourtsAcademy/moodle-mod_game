@@ -15,6 +15,13 @@ $string[ 'bookquiz_categories'] = 'Categories';
 $string[ 'bookquiz_chapters'] = 'Chapters';
 $string[ 'bookquiz_numquestions'] = 'Questions';
 
+//classes
+$string[ 'eventgamecreated'] = 'Game created';
+$string[ 'eventgamedeleted'] = 'Game deleted';
+$string[ 'eventgamesupdated'] = 'Game updated';
+$string[ 'eventgameviewed'] = 'Game viewed';
+$string[ 'eventgameplayed'] = 'Game played';
+
 //cross/cross_class.php
 $string[ 'lettersall'] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -27,6 +34,7 @@ $string[ 'cross_errors'] = 'wrong characters';
 $string[ 'cross_found_many'] = 'Found';
 $string[ 'cross_found_one'] = 'Found';
 $string[ 'grade'] = 'Grade';
+$string[ 'cross_disabletransformuppercase'] = 'Disables text-transform:uppercase in CSS';
 
 //cross/play.php
 $string[ 'cross_across'] = 'Across';
@@ -235,10 +243,10 @@ $string[ 'hangman_showlast'] = 'Show last letter of hangman';
 $string[ 'hangman_showquestion'] = 'Show the questions ?';
 $string[ 'hiddenpicture_across'] = 'Cells horizontal';
 $string[ 'hiddenpicture_down'] = 'Cells down';
-$string[ 'hiddenpicture_height'] = 'Set height of picture to';
+$string[ 'hiddenpicture_height'] = 'Set height of picture to (in pixels)';
 $string[ 'hiddenpicture_options'] = '\'Hidden Picture\' options';
 $string[ 'hiddenpicture_pictureglossary'] = 'The glossary for main question and picture';
-$string[ 'hiddenpicture_width'] = 'Set width of picture to';
+$string[ 'hiddenpicture_width'] = 'Set width of picture to (in pixels)';
 $string[ 'millionaire_background'] = 'Background color';
 $string[ 'millionaire_options'] = 'Millionaire\' options';
 $string[ 'millionaire_shuffle'] = 'Randomize questions';
@@ -246,10 +254,10 @@ $string[ 'snakes_background'] = 'Background';
 $string[ 'snakes_cols'] = 'Cols';
 $string[ 'snakes_data'] = 'Positions of Snakes and Ladders';
 $string[ 'snakes_file'] = 'File for background';
-$string[ 'snakes_footerx'] = 'Space at bootom left';
-$string[ 'snakes_footery'] = 'Space at bottom right';
-$string[ 'snakes_headerx'] = 'Space at up left';
-$string[ 'snakes_headery'] = 'Space at up right';
+$string[ 'snakes_footerx'] = 'Space at bootom left (in pixels)';
+$string[ 'snakes_footery'] = 'Space at bottom right (in pixels)';
+$string[ 'snakes_headerx'] = 'Space at up left (in pixels)';
+$string[ 'snakes_headery'] = 'Space at up right (in pixels)';
 $string[ 'snakes_layout0'] = 'Question at the top of the image';
 $string[ 'snakes_layout1'] = 'Question at the bottom of the image';
 $string[ 'snakes_options'] = '\'Snakes and Ladders\' options';
@@ -282,6 +290,7 @@ $string[ 'startagain'] = 'Start again';
 $string[ 'timetaken'] = 'Time taken';
 
 //settings.php
+$string[ 'hangmanimagesets'] = 'Number of image sets used by hangman';
 $string[ 'hidebookquiz'] = 'Hide the "Book with questions" game';
 $string[ 'hidecross'] = 'Hide the Crossword game';
 $string[ 'hidecryptex'] = 'Hide the Cryptex game';
@@ -290,6 +299,7 @@ $string[ 'hidehiddenpicture'] = 'Hide the "Hidden Picture" game';
 $string[ 'hidemillionaire'] = 'Hide the Millionaire game';
 $string[ 'hidesnakes'] = 'Hide the "Snakes and Ladders" game';
 $string[ 'hidesudoku'] = 'Hide the Sudoku game';
+$string[ 'confighangmanimagesets'] = 'Configs how many set of images are used by hangman';
 $string[ 'confighidebookquiz'] = 'Configs if the "Book with questions" game is shown to teachers or not';
 $string[ 'confighidecross'] = 'Configs if the Crossword game is shown to teachers or not';
 $string[ 'confighidecryptex'] = 'Configs if the Cryptex game is shown to teachers or not';
@@ -298,7 +308,6 @@ $string[ 'confighidehiddenpicture'] = 'Configs if the "Hidden Picture" game is s
 $string[ 'confighidemillionaire'] = 'Configs if the Millionaire game is shown to teachers or not';
 $string[ 'confighidesnakes'] = 'Configs if the "Snakes and Ladders" game is shown to teachers or not';
 $string[ 'confighidesudoku'] = 'Configs if the Sudoku game is shown to teachers or not';
-
 
 //showanswers.php
 $string[ 'clearrepetitions'] = 'Clear statistics';
