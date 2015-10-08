@@ -85,12 +85,21 @@ function game_cryptex_continue( $id, $game, $attempt, $cryptexrec, $endofgame, $
 }
 
 //q means game_queries.id
-function game_cryptex_check( $id, $game, $attempt, $cryptexrec, $q, $answer, $context)
+function game_cryptex_check( $id, $game, $attempt, $cryptexrec, $q, $answer, $finishattempt, $context)
 {
     global $DB;
 
-	if( $attempt === false){
-		game_cryptex_continue( $id, $game, $attempt, $cryptexrec, false);
+
+	if( $finishattempt)
+    {
+        game_updateattempts( $game, $attempt, -1, true);
+		game_cryptex_continue( $id, $game, false, false, true, $context);
+		return;
+	}
+	
+    if( $attempt === false)
+    {
+		game_cryptex_continue( $id, $game, $attempt, $cryptexrec, false, $context);
 		return;
 	}
 
@@ -127,7 +136,7 @@ function game_cryptex_check( $id, $game, $attempt, $cryptexrec, $q, $answer, $co
 	game_cryptex_play( $id, $game, $attempt, $cryptexrec, $crossm, true, $onlyshow, $showsolution, $context);
 }
 
-function game_cryptex_play( $id, $game, $attempt, $cryptexrec, $crossm, $updateattempt=false, $onlyshow=false, $showsolution=false, $context)
+function game_cryptex_play( $id, $game, $attempt, $cryptexrec, $crossm, $updateattempt=false, $onlyshow=false, $showsolution=false, $context, $print=false, $showhtmlprintbutton=true)
 {
     global $DB;
 
@@ -219,6 +228,11 @@ width:	240pt;
 --></style>
 <?php
 
+	$grade = round( 100 * $gradeattempt);
+	echo get_string( 'grade', 'game').' '.$grade.' %';
+
+	echo '<br>';
+
 	echo '<table border=0>';
 	echo '<tr><td>';
 	$cryptex->displaycryptex( $crossm->cols, $crossm->rows, $cryptexrec->letters, $mask, $showsolution, $textdir);
@@ -248,12 +262,48 @@ width:	240pt;
 </tr>
 </table>
 
-
 <?php
-	$grade = round( 100 * $gradeattempt);
-	echo '<br>'.get_string( 'grade', 'game').' '.$grade.' %';
 
-	echo "<br><br>";
+	if( $showhtmlprintbutton){
+		echo '<br><button id="finishattemptbutton" type="button" onclick="OnEndGame();" >'.get_string( 'finish', 'game');
+		echo '</button>';
+        echo '<button id="printbutton" type="button" onclick="OnPrint();" >'.get_string( 'print', 'game');
+        echo '</button><br>';
+	}
+
+if( $showhtmlprintbutton){
+?>
+<script>
+    function PrintHtmlClick()
+    {
+    	document.getElementById("printbutton").style.display = "none";
+    	
+        window.print();     
+
+    	document.getElementById("printbutton").style.display = "block";	
+    }
+
+    function OnPrint()
+    {
+        <?php
+        global $CFG; 
+        $params = "id=$id&gameid=$game->id";
+        echo "window.open( \"{$CFG->wwwroot}/mod/game/print.php?$params\");";
+        ?>
+    }
+
+    function OnEndGame()
+    {
+        <?php
+        global $CFG;
+        $params = 'id='.$id.'&action=cryptexcheck&g=&finishattempt=1';
+    	echo "window.location = \"{$CFG->wwwroot}/mod/game/attempt.php?$params\";\r\n";
+        ?>
+    }
+</script>
+<?php
+}
+
 	$i = 0;
 	$else = '';
 	$contextglossary = false;
@@ -305,7 +355,13 @@ width:	240pt;
 			}
 		</script>
 	<?php
+
+    if( $print)
+        echo '<body onload="window.print()">';
+    else
+        echo '<body>';  
 }
+
 
 function game_cryptex_onfinished( $id, $game, $attempt, $cryptexrec)
 {

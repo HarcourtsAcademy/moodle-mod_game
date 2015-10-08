@@ -232,8 +232,13 @@ class mod_game_mod_form extends moodleform_mod {
             $a = array();
             $a = get_string_manager()->get_list_of_translations();
 		    $a[ ''] = '----------';
+            $a[ 'user'] = get_string('language_user_defined', 'game');
             ksort( $a);
             $mform->addElement('select', 'language', get_string('hangman_language','game'), $a);
+
+            $mform->addElement('text', 'userlanguage', get_string('language_user_defined','game'));
+            $mform->setType('userlanguage', PARAM_TEXT);
+            $mform->disabledIf('userlanguage', 'language', 'neq', 'user');
         }
 
 //---------------------------------------------------------------------------
@@ -468,11 +473,6 @@ class mod_game_mod_form extends moodleform_mod {
                     $default_values->param5 = 1;
             }
             
-            //repair questioncategoryid
-            $categoryid = $default_values->questioncategoryid;
-            $contextid = $DB->get_field( 'question_categories', 'contextid', array( 'id' => $categoryid));
-            $default_values->questioncategoryid = $categoryid.','.$contextid;            
-
             if( $default_values->gamekind == 'snakes'){
                 if( isset( $default_values->param9)){
                     $a = explode( '#',$default_values->param9);

@@ -51,16 +51,27 @@ function game_get_moodle_version()
 
 function game_upper( $str, $lang='')
 {
-    $str = game_strtoupper( $str);
+    if( $lang == 'user')
+        return $str;
 
+    $str = game_strtoupper( $str);
+/*
     $strings = get_string_manager()->load_component_strings( 'game', ($lang == '' ? 'en' : $lang));
     if( !isset( $strings[ 'convertfrom']))
         return $str;
     if( !isset( $strings[ 'convertto']))
         return $str;
+*/
+    switch( $lang)
+    {  
+    case 'el':
+        $from = 'ΆΈΉΊΌΎΏ';
+        $to = 'ΑΕΗΙΟΥΩ';
+        break;
+    default:
+        return $str;
+    }
 	
-    $from = $strings[ 'convertfrom'];
-    $to = $strings[ 'convertto'];
     $len = game_strlen( $from);
     for($i=0; $i < $len; $i++){
         $str = str_replace( game_substr( $from, $i, 1), game_substr( $to, $i, 1), $str);
@@ -497,25 +508,34 @@ function game_detectlanguage( $word){
 
 //The words maybe are in two languages e.g. greek or english
 //so I try to find the correct one.
-function game_getallletters( $word, $lang='')
+function game_getallletters( $word, $lang='', $userlanguage='')
 {
     for(;;)
     {
-        $strings = get_string_manager()->load_component_strings( 'game', ($lang == '' ? 'en' : $lang));
-        if( isset( $strings[ 'lettersall']))
+        if( $lang == 'user')
         {
-            $letters = $strings[ 'lettersall'];
-            $word2 = game_upper( $word, $lang);
-            if( hangman_existall( $word2, $letters))
+            $letters = $userlanguage;
+            if( hangman_existall( $word, $letters))
                 return $letters;
+            else
+                return '';
+        }else
+        {
+            $strings = get_string_manager()->load_component_strings( 'game', ($lang == '' ? 'en' : $lang));
+            if( isset( $strings[ 'lettersall']))
+            {
+                $letters = $strings[ 'lettersall'];
+                $word2 = game_upper( $word, $lang);
+                if( hangman_existall( $word2, $letters))
+                    return $letters;
+            }
+
+            if( $lang == '')
+                break;
+            else
+                $lang = '';   
         }
-
-        if( $lang == '')
-            break;
-        else
-            $lang = '';   
     }
-
     
     return '';
 }
@@ -735,8 +755,12 @@ function game_questions_shortanswer_question_fraction( $table, $fields, $select)
 	    	}
 	    	
             // update grade item and send all grades to gradebook
-            game_grade_item_update( $game);
-            game_update_grades( $game);    
+            $grades = new stdClass();
+            $grades->userid = $USER->id;
+            $grades->rawgrade = game_score_to_grade($score, $game);
+            $grades->datesubmitted = time();
+            game_grade_item_update( $game, $grades);
+            game_update_grades( $game, $grades->userid);    
 	    }
 		
 		//Update table game_grades
@@ -1216,9 +1240,10 @@ function game_get_question_states(&$questions, $cmoptions, $attempt, $lastattemp
 
 function game_sudoku_getquestions( $questionlist)
 {
-    global $DB;
+    global $CFG, $DB;
 
     // Load the questions
+    $sql = "SELECT q.*,qmo.single FROM {$CFG->prefix}question LEFT JOIN {$CFG->prefix}qtype_multichoice_options qmo ON q.id=qmo.questionid AND q.qtype='multichoice' WHERE q.id IN ($questionlist)";
     if (!$questions = $DB->get_records_select( 'question', "id IN ($questionlist)")) {
         print_error( get_string( 'no_questions', 'game'));
     }
@@ -1535,6 +1560,8 @@ function game_grade_responses( $question, $responses, $maxgrade, &$answertext)
 {
     if( $question->qtype == 'multichoice')
     {
+        if( $question->options->single == 0)
+            return game_grade_responses_multianswer( $question, $responses, $maxgrade, $answertext);
         $name = "resp{$question->id}_";
         $value = $responses->$name;
         $answer = $question->options->answers[ $value];
@@ -1556,11 +1583,36 @@ function game_grade_responses( $question, $responses, $maxgrade, &$answertext)
     }
 }
 
+function game_grade_responses_multianswer( $question, $responses, $maxgrade, &$answertext)
+{
+    $name = "resp{$question->id}_";
+
+    $len = strlen( $name);
+    $fraction = 0;
+    foreach( $responses as $key => $value)
+    {
+        $sub = substr( $key, 0, strlen( $name));
+        if( $sub != $name)
+            continue;
+
+        $name2 = $name.$value;
+        $value2 = $responses->$name2;
+        $answer = $question->options->answers[ $value2];
+        $fraction += $answer->fraction;
+    }
+
+    return $fraction * $maxgrade;
+}
+
 function game_print_question( $game, $question, $context)
 {
     if( $question->qtype == 'multichoice')
-        game_print_question_multichoice( $game, $question, $context);
-    else if( $question->qtype == 'shortanswer')
+    {
+        if( $question->options->single == 0)
+            game_print_question_multianswer( $game, $question, $context);
+        else
+            game_print_question_multichoice( $game, $question, $context);
+    }else if( $question->qtype == 'shortanswer')
         game_print_question_shortanswer( $game, $question, $context);
 }
 
@@ -1615,6 +1667,59 @@ function game_print_question_multichoice( $game, $question, $context)
 </div>
 <?php
 }
+
+function game_print_question_multianswer( $game, $question, $context)
+{
+    global $CFG;
+
+    $i=0;
+    $questiontext = $question->questiontext;
+    $answerprompt = get_string( 'singleanswer', 'quiz');
+    $feedback = '';
+    $anss = array();
+    foreach( $question->options->answers as $a)
+    {
+        $answer = new stdClass();
+        if( substr( $a->answer, 0, 3) == '<p>' or substr( $a->answer, 0, 3) == '<P>')
+        {
+            $a->answer = substr( $a->answer, 3);
+            $s = rtrim( $a->answer);
+            if( substr( $s, 0, -3) == '<p>' or substr( $s, 0, -3) == '<P>')
+                $a->answer = substr( $a->answer, 0, -3);
+        }
+        $a->answer = game_filterquestion_answer(str_replace( '\"', '"', $a->answer), $a->id, $context->id, $game->course);
+        $answer->control = "<input  id=\"resp{$question->id}_{$a->id}\" name=\"resp{$question->id}_{$a->id}\"  type=\"checkbox\" value=\"{$a->id}\" /> ".$a->answer;
+        $answer->class = 'radio';
+        $answer->id = $a->id;
+        $answer->text = $a->answer;
+        $answer->feedbackimg = '';
+        $answer->feedback = '';
+        $anss[] = $answer;
+    }
+?>
+<div class="qtext">
+    <?php echo game_filterquestion(str_replace( '\"', '"', $questiontext), $question->id, $context->id, $game->course); ?>
+</div>
+
+
+<div class="ablock clearfix">
+    <div class="prompt">
+        <?php echo $answerprompt; ?>
+    </div>
+
+    <table class="answer">
+        <?php $row = 1; foreach ($anss as $answer) { ?>
+        <tr class="<?php echo 'r'.$row = $row ? 0 : 1; ?>">
+            <td>
+                <?php echo $answer->control; ?>
+            </td>
+        </tr>
+        <?php } ?>        
+    </table>
+</div>
+<?php
+}
+
 
 function game_print_question_shortanswer( $game, $question, $context)
 {
@@ -1929,17 +2034,23 @@ function game_grade_questions( $questions)
         $id = game_question_get_id_from_name_prefix( $key);
         if( $id === false)
             continue;
-            
-        $grade = new stdClass();
-        $grade->id = $id;
-        $grade->response = $value;
-        $grade->grade = 0;
+                
+        if( array_key_exists( $id, $grades))
+            $grade = $grades[ $id];
+        else
+        {
+            $grade = new stdClass();            
+            $grade->grade = 0;
+            $grade->id = $id;
+        }
+
+        $grade->response = $value;        
         
         $question = $questions[ $id];
         if( $question->qtype == 'multichoice')
         {
             $answer = $question->options->answers[ $value];
-            $grade->grade = $answer->fraction;
+            $grade->grade += $answer->fraction;
         }else if( $question->qtype == 'shortanswer')
         {
             foreach( $question->options->answers as $answerid => $answer)
@@ -1950,7 +2061,7 @@ function game_grade_questions( $questions)
                 }
             }
         }
-            
+
         $grades[ $grade->id] = $grade;
     }
 
@@ -2074,14 +2185,6 @@ function game_get_context_course_instance( $courseid)
         return context_course::instance( $courseid);
     
     return get_context_instance( 50, $courseid);
-}
-
-function game_get_context_module_instance( $moduleid)
-{
-    if( class_exists( 'context_module'))
-        return context_module::instance( $moduleid);
-    
-    return get_context_instance( CONTEXT_MODULE, $moduleid);
 }
 
 function game_show_query( $game, $query, $text)
