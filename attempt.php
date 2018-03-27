@@ -151,7 +151,6 @@ function game_do_attempt( $id, $game, $action, $course, $context) {
             $attempt = game_getattempt( $game, $detail);
             $g = game_cross_unpackpuzzle( $g);
             game_cross_continue( $id, $game, $attempt, $detail, $g, $finishattempt, $context);
-            update_completion($id,$game,$course); // Academy Patch M#069.
             break;
         case 'crossprint':
             $attempt = game_getattempt( $game, $detail);
@@ -160,7 +159,6 @@ function game_do_attempt( $id, $game, $action, $course, $context) {
         case 'sudokucheck':     // The student tries to answer a question.
             $attempt = game_getattempt( $game, $detail);
             game_sudoku_check_questions( $id, $game, $attempt, $detail, $finishattempt, $course, $context);
-            update_completion($id,$game,$course); // Academy Patch M#069.
             $continue = true;
             break;
         case 'sudokucheckg':    // The student tries to guess a glossaryenry.
@@ -177,17 +175,14 @@ function game_do_attempt( $id, $game, $action, $course, $context) {
         case 'cryptexcheck':    // The user tries to guess a question.
             $attempt = game_getattempt( $game, $detail);
             game_cryptex_check( $id, $game, $attempt, $detail, $q, $answer, $finishattempt, $context);
-            update_completion($id,$game,$course); // Academy Patch M#069.
             break;
         case 'bookquizcheck':   // The student tries to answer a question.
             $attempt = game_getattempt( $game, $detail);
             game_bookquiz_check_questions( $id, $game, $attempt, $detail, $context);
-            update_completion($id,$game,$course); // Academy Patch M#069.
             break;
         case 'snakescheck':     // The student tries to answer a question.
             $attempt = game_getattempt( $game, $detail);
             game_snakes_check_questions( $id, $game, $attempt, $detail, $context);
-            update_completion($id,$game,$course); // Academy Patch M#069.
             break;
         case 'snakescheckg':    // The student tries to answer a question from glossary.
             $attempt = game_getattempt( $game, $detail);
@@ -196,7 +191,6 @@ function game_do_attempt( $id, $game, $action, $course, $context) {
         case 'hiddenpicturecheckg': // The student tries to guess a glossaryentry.
             $attempt = game_getattempt( $game, $detail);
             game_hiddenpicture_check_mainquestion( $id, $game, $attempt, $detail, $endofgame, $context);
-            update_completion($id,$game,$course); // Academy Patch M#069.
             break;
         default:
             $continue = true;
@@ -303,35 +297,3 @@ function game_cross_unpackpuzzle( $g) {
 
     return $ret;
 }
-
-/* START Academy Patch M#069 Fix mod_game not calculating completion */
-/**
- * Update completion state.
- *
- * @param int $id
- * @param stdClass $game
- * @param stdClass $course
- */
-function update_completion($id,$game,$course) {
-    global $CFG, $USER;
-    require_once($CFG->libdir . '/gradelib.php');
-
-    $completion = new completion_info($course);
-    $modinfo = get_fast_modinfo($course->id);
-    $cm = $modinfo->get_cm($id);
-    if (!$completion->is_enabled($cm)) {
-        return null;
-    }
-
-    $item = grade_item::fetch(array('courseid' => $course->id,
-            'itemtype' => 'mod',
-            'itemmodule' => 'game', 'iteminstance' => $cm->instance, 'outcomeid' => null));
-
-    if ($item) {
-        $grades = grade_grade::fetch_users_grades($item, array($USER->id), false);
-        if (!empty($grades[$USER->id]) & $grades[$USER->id]->is_passed($item)) {
-            $completion->update_state($cm, COMPLETION_COMPLETE, $USER->id);
-        }
-    }
-}
-/* END Academy Patch M#069 */
